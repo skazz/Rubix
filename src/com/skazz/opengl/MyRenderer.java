@@ -36,8 +36,6 @@ public class MyRenderer implements Renderer {
 	public volatile float xAngle;
 	public volatile float yAngle;
 
-	// private RubicsCube mCube;
-	private Cube testCube0, testCube1, testCube2;
 	private RubicsCube rubic;
 
 	@Override

@@ -2,8 +2,6 @@ package com.skazz.opengl;
 
 import java.util.Random;
 
-import android.opengl.Matrix;
-
 public class RubicsCube {
 
 	private Square square[] = new Square[48];
