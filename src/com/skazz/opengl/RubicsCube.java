@@ -63,14 +63,24 @@ public class RubicsCube {
 			10, 14, 15, 11
 	};
 	private int fixedFace[] = { 5, 9, 10, 6 };
+	private float normals[] = {
+			0.0f, 1.0f, 0.0f,
+			-1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f,
+			1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, -1.0f,
+			0.0f, -1.0f, 0.0f
+	};
 	
 	
 	public RubicsCube (int mProgram) {
 		float vertices[];
+		float normals[];
 		float temp[] = new float[12];
 
 		for (int side = 0; side < 6; side++) {
 			vertices = createVertices(side);
+			normals = createNormals(side);
 			
 			// movable faces
 			for (int i = 0; i < 8; i++) {
@@ -79,7 +89,7 @@ public class RubicsCube {
 						temp[j*3 + k] = vertices[(faces[i*4 + j] * 3) + k];
 					}
 				}
-				square[side * 8 + i] = new Square(mProgram, temp, side);
+				square[side * 8 + i] = new Square(mProgram, temp, normals, side);
 			}
 			
 			// middle face
@@ -88,7 +98,7 @@ public class RubicsCube {
 					temp[j*3 + k] = vertices[(fixedFace[j] * 3) + k];
 				}
 			}
-			fixed[side] = new Square(mProgram, temp, side);
+			fixed[side] = new Square(mProgram, temp, normals, side);
 		}
 	}
 	
@@ -131,6 +141,17 @@ public class RubicsCube {
 		return temp;
 	}
 
+	public void rotateXY(float xAngle, float yAngle) {
+		for (int i = 0; i < 6; i++) {
+			fixed[i].rotate(xAngle, 1, 0, 0);
+			fixed[i].rotate(yAngle, 0, 1, 0);
+		}
+		
+		for (int i = 0; i < 48; i++) {
+			square[i].rotate(xAngle, 1, 0, 0);
+			square[i].rotate(yAngle, 0, 1, 0);
+		}
+	}
 	
 	public void draw(float[] mMVPMatrix) {
 		for (int i = 0; i < 6; i++) {
@@ -154,6 +175,16 @@ public class RubicsCube {
 		}
 		
 		return vertices;
+	}
+	
+	private float[] createNormals(int side) {
+		float temp[] = new float[12];
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 3; j++) {
+				temp[i * 3 + j] = normals[side * 3 + j];
+			}
+		}
+		return temp;
 	}
 	
 }

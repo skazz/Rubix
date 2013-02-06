@@ -11,11 +11,13 @@ import android.opengl.Matrix;
 public class Square {
 
 	private final FloatBuffer vertexBuffer;
+	private final FloatBuffer normalBuffer;
 	private final ShortBuffer drawListBuffer;
 	private final int mProgram;
 	private int mPositionHandle;
 	private int mColorHandle;
 	private int mMVPMatrixHandle;
+	private int mNormalHandle;
 
 	// number of coordinates per vertex in this array
 	static final int COORDS_PER_VERTEX = 4;
@@ -28,6 +30,7 @@ public class Square {
 			{ 0.8f, 0.8f, 0.8f, 1.0f}	// down white
 			};
 	private float squareCoords[];
+	private float normal[];
 
 	private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
@@ -38,16 +41,19 @@ public class Square {
 	
 	public int getColor() { return color; };
 
-	public Square(int mProgram, float vertices[], int color) {
+	public Square(int mProgram, float vertices[], float normal[], int color) {
 		this.mProgram = mProgram;
 		this.color = color;
 		
+		this.normal = new float[16];
 		squareCoords = new float[16];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
 				squareCoords[i*4 + j] = vertices[i*3 + j];
+				this.normal[i*4 + j] = normal[i*3 + j];
 			}
 			squareCoords[i*4 + 3] = 1.0f;
+			this.normal[i*4 + 3] = 1.0f;
 		}
 		
 		// initialize vertex byte buffer for shape coordinates
@@ -58,6 +64,13 @@ public class Square {
 		vertexBuffer = bb.asFloatBuffer();
 		vertexBuffer.put(squareCoords);
 		vertexBuffer.position(0);
+		
+		// initialize NormalenBuffer
+		ByteBuffer nb = ByteBuffer.allocateDirect(this.normal.length * 4);
+		nb.order(ByteOrder.nativeOrder());
+		normalBuffer = nb.asFloatBuffer();
+		normalBuffer.put(this.normal);
+		normalBuffer.position(0);
 
 		// initialize byte buffer for the draw list
 		ByteBuffer dlb = ByteBuffer.allocateDirect(
@@ -73,12 +86,18 @@ public class Square {
 	public void rotate(float angle, float x, float y, float z) {
 		float mRM[] = new float[16];
 		Matrix.setRotateM(mRM, 0, angle, x, y, z);
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++) {
 			Matrix.multiplyMV(squareCoords, i*4, mRM, 0, squareCoords, i*4);
+			Matrix.multiplyMV(normal, i*4, mRM, 0, normal, i*4);
+		}
+		
 		
 		// update buffer
 		vertexBuffer.put(squareCoords);
 		vertexBuffer.position(0);
+		
+		normalBuffer.put(normal);
+		normalBuffer.position(0);
 	}
 
 	public void draw(float[] mvpMatrix) {
