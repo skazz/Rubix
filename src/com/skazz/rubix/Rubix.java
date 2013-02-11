@@ -6,8 +6,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Point;
-import android.view.Display;
 import android.view.MotionEvent;
 
 public class Rubix extends Activity {
@@ -33,41 +31,33 @@ class MyGLSurfaceView extends GLSurfaceView {
 	private MyRenderer mRenderer;
 	private float mPreviousX;
 	private float mPreviousY;
-	private boolean hit = false;
 
 	@Override
 	public boolean onTouchEvent(MotionEvent e) {
-		// MotionEvent reports input details from the touch screen
-		// and other input controls.
+	    // MotionEvent reports input details from the touch screen
+	    // and other input controls. In this case, you are only
+	    // interested in events where the touch position changed.
 
-		float x = e.getX();
-		float y = e.getY();
+	    float x = e.getX();
+	    float y = e.getY();
 
-		switch (e.getAction()) {
-		/*case MotionEvent.ACTION_UP:
-			hit = false;
-			break;
-		case MotionEvent.ACTION_DOWN:
-			if (mRenderer.moveSide(x, y, getWidth(), getHeight())) {
-				hit = true;
-				break;
-			} */
-		case MotionEvent.ACTION_MOVE:
-			float dx = x - mPreviousX;
-			float dy = y - mPreviousY;
+	    switch (e.getAction()) {
+	    	case MotionEvent.ACTION_DOWN:
+	    		if (mRenderer.intersect(x, y, getWidth(), getHeight()))
+	    			requestRender();
+	    		break;
+	        case MotionEvent.ACTION_MOVE:
 
-			mRenderer.xAngle += dy * TOUCH_SCALE_FACTOR;
-			mRenderer.yAngle += dx * TOUCH_SCALE_FACTOR;
-			
-			// rotate Cube
-			mRenderer.rotateCube(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
-			
-			requestRender();
-			break;
-		}
-		mPreviousX = x;
-		mPreviousY = y;
-		return true;
+	            float dx = x - mPreviousX;
+	            float dy = y - mPreviousY;
+	            
+	            mRenderer.addAngle(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
+	            requestRender();
+	    }
+
+	    mPreviousX = x;
+	    mPreviousY = y;
+	    return true;
 	}
 
 	public MyGLSurfaceView(Context context){

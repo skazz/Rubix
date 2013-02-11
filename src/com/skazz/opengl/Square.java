@@ -5,6 +5,8 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import com.skazz.utility.Vector;
+
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
@@ -17,7 +19,6 @@ public class Square {
 	private int mPositionHandle;
 	private int mColorHandle;
 	private int mMVPMatrixHandle;
-	private int mNormalHandle;
 
 	// number of coordinates per vertex in this array
 	static final int COORDS_PER_VERTEX = 4;
@@ -30,7 +31,8 @@ public class Square {
 			{ 0.8f, 0.8f, 0.8f, 1.0f}	// down white
 			};
 	private float squareCoords[];
-	private float normal[];
+	
+	private float normals[];
 
 	private final short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
@@ -41,19 +43,19 @@ public class Square {
 	
 	public int getColor() { return color; };
 
-	public Square(int mProgram, float vertices[], float normal[], int color) {
+	public Square(int mProgram, float vertices[], float normals[], int color) {
 		this.mProgram = mProgram;
 		this.color = color;
 		
-		this.normal = new float[16];
 		squareCoords = new float[16];
+		this.normals = new float[16];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
 				squareCoords[i*4 + j] = vertices[i*3 + j];
-				this.normal[i*4 + j] = normal[i*3 + j];
+				this.normals[i*4 + j] = normals[i*3 + j];
 			}
 			squareCoords[i*4 + 3] = 1.0f;
-			this.normal[i*4 + 3] = 1.0f;
+			this.normals[i*4 + 3] = 1.0f;
 		}
 		
 		// initialize vertex byte buffer for shape coordinates
@@ -66,10 +68,10 @@ public class Square {
 		vertexBuffer.position(0);
 		
 		// initialize NormalenBuffer
-		ByteBuffer nb = ByteBuffer.allocateDirect(this.normal.length * 4);
+		ByteBuffer nb = ByteBuffer.allocateDirect(this.normals.length * 4);
 		nb.order(ByteOrder.nativeOrder());
 		normalBuffer = nb.asFloatBuffer();
-		normalBuffer.put(this.normal);
+		normalBuffer.put(this.normals);
 		normalBuffer.position(0);
 
 		// initialize byte buffer for the draw list
@@ -88,15 +90,14 @@ public class Square {
 		Matrix.setRotateM(mRM, 0, angle, x, y, z);
 		for (int i = 0; i < 4; i++) {
 			Matrix.multiplyMV(squareCoords, i*4, mRM, 0, squareCoords, i*4);
-			Matrix.multiplyMV(normal, i*4, mRM, 0, normal, i*4);
+			Matrix.multiplyMV(normals, i*4, mRM, 0, normals, i*4);
 		}
-		
 		
 		// update buffer
 		vertexBuffer.put(squareCoords);
 		vertexBuffer.position(0);
 		
-		normalBuffer.put(normal);
+		normalBuffer.put(normals);
 		normalBuffer.position(0);
 	}
 
@@ -130,5 +131,37 @@ public class Square {
 
 		// Disable vertex array
 		GLES20.glDisableVertexAttribArray(mPositionHandle);
+	}
+
+	
+	public boolean intersect(float[] P0, float[] P1) {
+		
+		float[] n = { normals[0], normals[1], normals[2] };
+		float[] vP = Vector.minus(P1, P0);
+		
+		float dotNV = Vector.dot(n, vP);
+		if (dotNV > 0) {
+			float[] V0 = { squareCoords[0], squareCoords[1], squareCoords[2] };
+			float[] V1 = { squareCoords[4], squareCoords[5], squareCoords[6] };
+			float[] V3 = { squareCoords[12], squareCoords[13], squareCoords[14] };
+			
+			float r = (Vector.dot(n, (Vector.minus(V0, P0))) / dotNV);
+			float[] I = Vector.addition(P0, Vector.scalarProduct(r, vP));
+			
+			float[] u = Vector.minus(V1, V0);
+			float[] v = Vector.minus(V3, V0);
+			float[] w = Vector.minus(I, V0);
+			
+			float temp = Vector.dot(u, v) * Vector.dot(u, v) - Vector.dot(u, u) * Vector.dot(v, v);
+			float s = (Vector.dot(u, v) * Vector.dot(w, v) - Vector.dot(v, v) * Vector.dot(w, u)) / temp;
+			float t = (Vector.dot(u, v) * Vector.dot(w, u) - Vector.dot(u, u) * Vector.dot(w, v)) / temp;
+			
+			if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+				color = (color + 1) % 6;
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }

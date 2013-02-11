@@ -32,6 +32,15 @@ public class RubicsCube {
 		0, 0, -1	// down
 	};
 	
+	private float normal[] = {
+			0, 1, 0,	// up
+			-1, 0, 0,	// left
+			0, 0, 1,	// front
+			1, 0, 0,	// right
+			0, 0, -1,	// back
+			0, -1, 0	// down
+	};
+	
 	// Moves Clockwise
 	private int moves[][] = {
 			{0, 2, 7, 5}, {1, 4, 6, 3}, {8, 32, 24, 16}, {9, 33, 25, 17}, {10, 34, 26, 18},				// Up
@@ -63,14 +72,6 @@ public class RubicsCube {
 			10, 14, 15, 11
 	};
 	private int fixedFace[] = { 5, 9, 10, 6 };
-	private float normals[] = {
-			0.0f, 1.0f, 0.0f,
-			-1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f,
-			1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, -1.0f,
-			0.0f, -1.0f, 0.0f
-	};
 	
 	
 	public RubicsCube (int mProgram) {
@@ -113,7 +114,7 @@ public class RubicsCube {
 	
 	public void move(int move, int n) {
 		System.out.println(n + "" + move + ", ");
-		// rotate Faces (#TODO compute Squarelist instantly)
+		// rotate Faces (#TODO compute Squarelist in one go)
 		for (int k = 0; k < n; k++) {
 			Square toRotate[] = getSide(move);
 			fixed[move].rotate(90, angle[move][0], angle[move][1], angle[move][2]);
@@ -178,13 +179,26 @@ public class RubicsCube {
 	}
 	
 	private float[] createNormals(int side) {
-		float temp[] = new float[12];
+		float mNormal[] = new float[12];
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
-				temp[i * 3 + j] = normals[side * 3 + j];
+				mNormal[i*3 + j] = normal[side * 3 + j];
 			}
 		}
-		return temp;
+		return mNormal;
+	}
+
+
+	public boolean intersect(float[] P0, float[] P1) {
+		for (int i = 0; i < 6; i++)
+			if (fixed[i].intersect(P0, P1))
+				return true;
+		
+		for (int i = 0; i < 48; i++)
+			if (square[i].intersect(P0, P1))
+				return true;
+		
+		return false;
 	}
 	
 }

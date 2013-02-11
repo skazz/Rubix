@@ -1,5 +1,7 @@
 package com.skazz.opengl;
 
+import java.util.Vector;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -13,8 +15,12 @@ public class MyRenderer implements Renderer {
 	private final float[] mMVPMatrix = new float[16];
 	private final float[] mProjMatrix = new float[16];
 	private final float[] mVMatrix = new float[16];
-	private float[] mRotationMatrix = new float[16];
+	private float[] mMMatrix = new float[16];
+	private float[] mYRotationMatrix = new float[16];
 	private int mProgram;
+
+	
+	private Vector<Line> line = new Vector<Line>();
 	
 	private final String vertexShaderCode =
 			// This matrix member variable provides a hook to manipulate
@@ -34,8 +40,8 @@ public class MyRenderer implements Renderer {
 					"  gl_FragColor = vColor;" +
 					"}";
 	
-	public volatile float xAngle;
-	public volatile float yAngle;
+	private float xAngle;
+	private float yAngle;
 
 	private RubicsCube rubic;
 
@@ -51,13 +57,9 @@ public class MyRenderer implements Renderer {
 		GLES20.glDepthRangef(0, 1);
 		GLES20.glClearDepthf(1);
 		
-		/*
 		GLES20.glEnable(GLES20.GL_CULL_FACE);
-		GLES20.glCullFace(GLES20.GL_BACK);
-		GLES20.glFrontFace(GLES20.GL_CW);
-		*/
 		
-		// prepare shader and OpenGL program
+		// prepare shaders and OpenGL program
 		int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER,
 				vertexShaderCode);
 		int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER,
@@ -77,7 +79,7 @@ public class MyRenderer implements Renderer {
         GLES20.glUseProgram(mProgram);
         
         rubic = new RubicsCube(mProgram);
-        rubic.scramble();
+        //rubic.scramble();
 	}
 
 	@Override
@@ -90,21 +92,23 @@ public class MyRenderer implements Renderer {
 
 		// Calculate the projection and view transformation
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
-		
-		
-		/* Create a rotation transformation for xAxis
-		Matrix.setRotateM(mRotationMatrix, 0, xAngle, -1.0f, 0, 0);
 
-		// Combine the rotation matrix with the projection and camera view
-		Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
-		
-		// Same for yAxis
-		Matrix.setRotateM(mRotationMatrix, 0, yAngle, 0, -1.0f, 0);
-		Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0); */
+		// Calculate the Model-View-Projection-Matrix
+		Matrix.multiplyMM(mMVPMatrix, 0, mMMatrix, 0, mMVPMatrix, 0);
 
 		
 		// Draw shape
 		rubic.draw(mMVPMatrix);
+		for(int i = 0; i < line.size(); i++)
+			line.get(i).draw(mMVPMatrix);
+	}
+	
+	public void addAngle(float xAngle, float yAngle) {
+		this.xAngle += xAngle;
+		this.yAngle += yAngle;
+		Matrix.setRotateM(mMMatrix, 0, this.xAngle, -1.0f, 0, 0);
+		Matrix.setRotateM(mYRotationMatrix, 0, this.yAngle, 0, -1.0f, 0);
+		Matrix.multiplyMM(mMMatrix, 0, mYRotationMatrix, 0, mMMatrix, 0);
 	}
 
 	@Override
@@ -116,6 +120,8 @@ public class MyRenderer implements Renderer {
 		// this projection matrix is applied to object coordinates
 		// in the onDrawFrame() method
 		Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+		
+		Matrix.setIdentityM(mMMatrix, 0);
 	}
 
 	public static int loadShader(int type, String shaderCode){
@@ -160,4 +166,38 @@ public class MyRenderer implements Renderer {
 		return false;
 	}
 
+	public boolean intersect(float screenX, float screenY, int screenWidth, int screenHeight) {
+		// calculate vector in world space
+		
+		float x = screenX;
+		float y = (screenHeight - screenY);
+		int viewPort[] = { 0, 0, screenWidth, screenHeight };
+		float nearPoint[] = new float[4];
+		float farPoint[] = new float[4];
+		
+		
+		GLU.gluUnProject(x, y, 1.0f, mVMatrix, 0, mProjMatrix, 0, viewPort, 0, nearPoint, 0);
+		if (nearPoint[3] != 0) {
+			nearPoint[0] = nearPoint[0] / nearPoint[3];
+			nearPoint[1] = nearPoint[1] / nearPoint[3];
+			nearPoint[2] = nearPoint[2] / nearPoint[3];
+		}
+		
+		Matrix.multiplyMV(nearPoint, 0, mMMatrix, 0, nearPoint, 0);
+		
+		GLU.gluUnProject(x, y, 0.0f, mVMatrix, 0, mProjMatrix, 0, viewPort, 0, farPoint, 0);
+		
+		if (farPoint[3] != 0) {
+			farPoint[0] = farPoint[0] / farPoint[3];
+			farPoint[1] = farPoint[1] / farPoint[3];
+			farPoint[2] = farPoint[2] / farPoint[3];
+		}
+		
+		Matrix.multiplyMV(farPoint, 0, mMMatrix, 0, farPoint, 0);
+		
+		// TODO test rays
+		line.add(new Line(mProgram, nearPoint, farPoint));
+
+		return rubic.intersect(nearPoint, farPoint);
+	}
 }
