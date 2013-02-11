@@ -88,7 +88,7 @@ public class MyRenderer implements Renderer {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
 		// Set the camera position (View matrix)
-		Matrix.setLookAtM(mVMatrix, 0, 0, 1, 3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+		Matrix.setLookAtM(mVMatrix, 0, 0, 0, 3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
 
 		// Calculate the projection and view transformation
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
@@ -139,31 +139,6 @@ public class MyRenderer implements Renderer {
 	
 	public void rotateCube(float xAngle, float yAngle) {
 		rubic.rotateXY(xAngle, yAngle);
-	}
-	
-	public boolean moveSide(float x, float y, int width, int height) {
-		float inverted[] = new float[16];
-		float nearPoint[] = new float[4];
-		float farPoint[] = new float[4];
-		float mX = x;
-		float mY = height - y;
-		
-		nearPoint[0] = ((mX * 2.0f) / width - 1);
-		nearPoint[1] = ((mY * 2.0f) / height - 1);
-		nearPoint[2] = 1.0f;
-		nearPoint[3] = 1.0f;
-		
-		farPoint[0] = ((mX * 2.0f) / width - 1);
-		farPoint[1] = ((mY * 2.0f) / height - 1);
-		farPoint[2] = -1.0f;
-		farPoint[3] = 1.0f;
-		
-		Matrix.invertM(inverted, 0, mMVPMatrix, 0);
-		Matrix.multiplyMV(nearPoint, 0, inverted, 0, nearPoint, 0);
-		Matrix.multiplyMV(farPoint, 0, inverted, 0, farPoint, 0);
-		System.out.println(nearPoint[0] + ", " + nearPoint[1] + ", " + nearPoint[3]);
-		System.out.println(farPoint[0] + ", " + farPoint[1] + ", " + farPoint[3]);
-		return false;
 	}
 
 	public boolean intersect(float screenX, float screenY, int screenWidth, int screenHeight) {

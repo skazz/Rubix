@@ -68,9 +68,7 @@ public class Line {
 		// Apply the projection and view transformation
 		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 
-		// Draw the square
-		/*GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.length,
-				GLES20.GL_UNSIGNED_SHORT, drawListBuffer); */
+		// Draw the line
 		GLES20.glLineWidth(0.1f);
 		
 		GLES20.glDrawArrays(GLES20.GL_LINES, 0, vertices.length / 3);
