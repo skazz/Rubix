@@ -41,13 +41,16 @@ class MyGLSurfaceView extends GLSurfaceView {
 	    float y = e.getY();
 
 	    switch (e.getAction()) {
+	    	case MotionEvent.ACTION_DOWN:
+	    		if (mRenderer.intersect(x, y, getWidth(), getHeight()))
+	    			requestRender();
+	    		break;
 	        case MotionEvent.ACTION_MOVE:
 
 	            float dx = x - mPreviousX;
 	            float dy = y - mPreviousY;
 	            
-	            mRenderer.xAngle += dy * TOUCH_SCALE_FACTOR;
-	            mRenderer.yAngle += dx * TOUCH_SCALE_FACTOR;
+	            mRenderer.addAngle(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
 	            requestRender();
 	    }
 

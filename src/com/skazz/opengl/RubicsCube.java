@@ -32,6 +32,15 @@ public class RubicsCube {
 		0, 0, -1	// down
 	};
 	
+	private float normal[] = {
+			0, 1, 0,	// up
+			-1, 0, 0,	// left
+			0, 0, 1,	// front
+			1, 0, 0,	// right
+			0, 0, -1,	// back
+			0, -1, 0	// down
+	};
+	
 	// Moves Clockwise
 	private int moves[][] = {
 			{0, 2, 7, 5}, {1, 4, 6, 3}, {8, 32, 24, 16}, {9, 33, 25, 17}, {10, 34, 26, 18},				// Up
@@ -67,10 +76,12 @@ public class RubicsCube {
 	
 	public RubicsCube (int mProgram) {
 		float vertices[];
+		float normals[];
 		float temp[] = new float[12];
 
 		for (int side = 0; side < 6; side++) {
 			vertices = createVertices(side);
+			normals = createNormals(side);
 			
 			// movable faces
 			for (int i = 0; i < 8; i++) {
@@ -79,7 +90,7 @@ public class RubicsCube {
 						temp[j*3 + k] = vertices[(faces[i*4 + j] * 3) + k];
 					}
 				}
-				square[side * 8 + i] = new Square(mProgram, temp, side);
+				square[side * 8 + i] = new Square(mProgram, temp, normals, side);
 			}
 			
 			// middle face
@@ -88,7 +99,7 @@ public class RubicsCube {
 					temp[j*3 + k] = vertices[(fixedFace[j] * 3) + k];
 				}
 			}
-			fixed[side] = new Square(mProgram, temp, side);
+			fixed[side] = new Square(mProgram, temp, normals, side);
 		}
 	}
 	
@@ -103,7 +114,7 @@ public class RubicsCube {
 	
 	public void move(int move, int n) {
 		System.out.println(n + "" + move + ", ");
-		// rotate Faces (#TODO compute Squarelist instantly)
+		// rotate Faces (#TODO compute Squarelist in one go)
 		for (int k = 0; k < n; k++) {
 			Square toRotate[] = getSide(move);
 			fixed[move].rotate(90, angle[move][0], angle[move][1], angle[move][2]);
@@ -154,6 +165,26 @@ public class RubicsCube {
 		}
 		
 		return vertices;
+	}
+	
+	private float[] createNormals(int side) {
+		float mNormal[] = new float[12];
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 3; j++) {
+				mNormal[i*3 + j] = normal[side * 3 + j];
+			}
+		}
+		return mNormal;
+	}
+
+
+	public boolean intersect(float[] P0, float[] P1) {
+		for (int i = 0; i < 6; i++)
+			fixed[i].intersect(P0, P1);
+		
+		for (int i = 0; i < 48; i++)
+			square[i].intersect(P0, P1);
+		return false;
 	}
 	
 }
