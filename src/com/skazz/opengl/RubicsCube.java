@@ -180,10 +180,13 @@ public class RubicsCube {
 
 	public boolean intersect(float[] P0, float[] P1) {
 		for (int i = 0; i < 6; i++)
-			fixed[i].intersect(P0, P1);
+			if (fixed[i].intersect(P0, P1))
+				return true;
 		
 		for (int i = 0; i < 48; i++)
-			square[i].intersect(P0, P1);
+			if (square[i].intersect(P0, P1))
+				return true;
+		
 		return false;
 	}
 	
