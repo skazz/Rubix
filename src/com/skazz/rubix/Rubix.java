@@ -6,6 +6,10 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 
 public class Rubix extends Activity {
@@ -19,10 +23,32 @@ public class Rubix extends Activity {
 		// Create a GLSurfaceView instance and set it
 		// as the ContentView for this Activity.
 		mGLView = new MyGLSurfaceView(this);
+		
 		setContentView(mGLView);
-
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.rubix_menu, menu);
+	    return true;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) {
+	        case R.id.newGame:
+	        	return true;
+	        case R.id.save_on_exit:
+	        	item.setChecked(!item.isChecked());
+	        	return true;
+	        case R.id.timer:
+	        	item.setChecked(!item.isChecked());
+	        	return true;
+	        default:
+	            return super.onContextItemSelected(item);
+	    }
+	}
 }
 
 class MyGLSurfaceView extends GLSurfaceView {
@@ -53,8 +79,10 @@ class MyGLSurfaceView extends GLSurfaceView {
 	    		}
 	    		break;
 	        case MotionEvent.ACTION_MOVE:
-
-	        	if (!hit) {
+	        	if (hit) {
+	        		
+	        	}
+	        	else {
 	        		float dx = x - mPreviousX;
 	        		float dy = y - mPreviousY;
 
@@ -84,7 +112,6 @@ class MyGLSurfaceView extends GLSurfaceView {
 
 		// Render the view only when there is a change in the drawing data
 		setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-
 	}
 
 }

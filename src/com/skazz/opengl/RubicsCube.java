@@ -114,7 +114,7 @@ public class RubicsCube {
 	}
 	
 	
-	public void move(int move, int n) {
+	private void move(int move, int n) {
 		// rotate Faces (#TODO compute Squarelist in one go)
 		for (int k = 0; k < n; k++) {
 			Square toRotate[] = getSide(move);
@@ -141,18 +141,6 @@ public class RubicsCube {
 			}
 		}
 		return temp;
-	}
-
-	public void rotateXY(float xAngle, float yAngle) {
-		for (int i = 0; i < 6; i++) {
-			fixed[i].rotate(xAngle, 1, 0, 0);
-			fixed[i].rotate(yAngle, 0, 1, 0);
-		}
-		
-		for (int i = 0; i < 48; i++) {
-			square[i].rotate(xAngle, 1, 0, 0);
-			square[i].rotate(yAngle, 0, 1, 0);
-		}
 	}
 	
 	public void draw(float[] mMVPMatrix) {

@@ -115,6 +115,8 @@ public class MyRenderer implements Renderer {
 		Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
 		
 		Matrix.setIdentityM(mMMatrix, 0);
+		
+		addAngle(25, 45);
 	}
 
 	public static int loadShader(int type, String shaderCode){
@@ -130,9 +132,6 @@ public class MyRenderer implements Renderer {
 		return shader;
 	}
 	
-	public void rotateCube(float xAngle, float yAngle) {
-		rubic.rotateXY(xAngle, yAngle);
-	}
 
 	public boolean intersect(float screenX, float screenY, int screenWidth, int screenHeight) {
 		// calculate vector in world space

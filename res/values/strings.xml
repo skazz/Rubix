@@ -2,7 +2,11 @@
 <resources>
 
     <string name="app_name">Rubix</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
+    <string name="new_game">Scramble</string>
+    <string name="save_on_exit">Save on Exit</string>
+    <string name="timer">Enable Timer</string>
+    <string name="inspection_time">Inspection Time</string>
+    <string name="scale">Scale</string>
 
 </resources>
