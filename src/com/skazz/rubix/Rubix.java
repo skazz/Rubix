@@ -31,6 +31,7 @@ class MyGLSurfaceView extends GLSurfaceView {
 	private MyRenderer mRenderer;
 	private float mPreviousX;
 	private float mPreviousY;
+	private boolean hit = false;
 
 	@Override
 	public boolean onTouchEvent(MotionEvent e) {
@@ -40,19 +41,29 @@ class MyGLSurfaceView extends GLSurfaceView {
 
 	    float x = e.getX();
 	    float y = e.getY();
+	    
+	    int width = getWidth();
+	    int height = getHeight();
 
 	    switch (e.getAction()) {
 	    	case MotionEvent.ACTION_DOWN:
-	    		if (mRenderer.intersect(x, y, getWidth(), getHeight()))
+	    		if (mRenderer.intersect(x, y, width, height)) {
+	    			hit = true;
 	    			requestRender();
+	    		}
 	    		break;
 	        case MotionEvent.ACTION_MOVE:
 
-	            float dx = x - mPreviousX;
-	            float dy = y - mPreviousY;
-	            
-	            mRenderer.addAngle(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
-	            requestRender();
+	        	if (!hit) {
+	        		float dx = x - mPreviousX;
+	        		float dy = y - mPreviousY;
+
+	        		mRenderer.addAngle(dy * TOUCH_SCALE_FACTOR, dx * TOUCH_SCALE_FACTOR);
+	        		requestRender();
+	        	}
+	        	break;
+	        case MotionEvent.ACTION_UP:
+	        	hit = false;
 	    }
 
 	    mPreviousX = x;

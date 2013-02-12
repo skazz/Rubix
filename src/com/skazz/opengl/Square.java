@@ -157,7 +157,6 @@ public class Square {
 			float t = (Vector.dot(u, v) * Vector.dot(w, u) - Vector.dot(u, u) * Vector.dot(w, v)) / temp;
 			
 			if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-				color = (color + 1) % 6;
 				return true;
 			}
 		}

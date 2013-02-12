@@ -1,7 +1,5 @@
 package com.skazz.opengl;
 
-import java.util.Vector;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -18,9 +16,6 @@ public class MyRenderer implements Renderer {
 	private float[] mMMatrix = new float[16];
 	private float[] mYRotationMatrix = new float[16];
 	private int mProgram;
-
-	
-	private Vector<Line> line = new Vector<Line>();
 	
 	private final String vertexShaderCode =
 			// This matrix member variable provides a hook to manipulate
@@ -79,7 +74,7 @@ public class MyRenderer implements Renderer {
         GLES20.glUseProgram(mProgram);
         
         rubic = new RubicsCube(mProgram);
-        //rubic.scramble();
+        rubic.scramble();
 	}
 
 	@Override
@@ -99,8 +94,6 @@ public class MyRenderer implements Renderer {
 		
 		// Draw shape
 		rubic.draw(mMVPMatrix);
-		for(int i = 0; i < line.size(); i++)
-			line.get(i).draw(mMVPMatrix);
 	}
 	
 	public void addAngle(float xAngle, float yAngle) {
@@ -169,9 +162,6 @@ public class MyRenderer implements Renderer {
 		}
 		
 		Matrix.multiplyMV(farPoint, 0, mMMatrix, 0, farPoint, 0);
-		
-		// TODO test rays
-		line.add(new Line(mProgram, nearPoint, farPoint));
 
 		return rubic.intersect(nearPoint, farPoint);
 	}

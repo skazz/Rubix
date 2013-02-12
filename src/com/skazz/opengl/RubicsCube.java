@@ -6,7 +6,7 @@ public class RubicsCube {
 
 	private Square square[] = new Square[48];
 	private Square fixed[] = new Square[6];
-	private static float SIZE = 0.1f;
+	private static float SIZE = 0.14f;
 	private static float EDGE = (SIZE / 2) * 3;
 	private float lUpperEdge[] = {
 			-EDGE, EDGE, -EDGE,	// up
@@ -72,6 +72,7 @@ public class RubicsCube {
 			10, 14, 15, 11
 	};
 	private int fixedFace[] = { 5, 9, 10, 6 };
+	private boolean solved;
 	
 	
 	public RubicsCube (int mProgram) {
@@ -109,11 +110,11 @@ public class RubicsCube {
 		for (int i = 0; i < 20 + rng.nextInt(12); i++) {
 			move(rng.nextInt(6), rng.nextInt(2) + 1);
 		}
+		solved = false;
 	}
 	
 	
 	public void move(int move, int n) {
-		System.out.println(n + "" + move + ", ");
 		// rotate Faces (#TODO compute Squarelist in one go)
 		for (int k = 0; k < n; k++) {
 			Square toRotate[] = getSide(move);
@@ -190,15 +191,31 @@ public class RubicsCube {
 
 
 	public boolean intersect(float[] P0, float[] P1) {
+		
+		// rotating clicked side clockwise and checking if cube is solved
 		for (int i = 0; i < 6; i++)
-			if (fixed[i].intersect(P0, P1))
+			if (fixed[i].intersect(P0, P1)) {
+				move(i, 1);
+				if (solved())
+					solved = true;
 				return true;
+			}
 		
 		for (int i = 0; i < 48; i++)
-			if (square[i].intersect(P0, P1))
+			if (square[i].intersect(P0, P1)) {
+				move(i / 8, 1);
+				if (solved())
+					solved  = true;
 				return true;
+			}
 		
 		return false;
 	}
 	
+	private boolean solved() {
+		for(int i = 0; i < 48; i++)
+			if (square[i].getColor() != i / 8)
+				return false;
+		return true;
+	}
 }
